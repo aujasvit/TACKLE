@@ -1,0 +1,41 @@
+#!/bin/bash
+{% if num_gpus -%}
+#SBATCH --gres=gpu:{{ num_gpus }}
+{% endif -%}
+{% if partition -%}
+#SBATCH --partition={{ partition }}
+{% endif -%}
+#SBATCH --cpus-per-task={{ cpus_per_task | default('3', true) }}
+#SBATCH --mem={{ mem | default('12GB', true) }}
+{%- if signals %}
+#SBATCH --signal=B:{{ signals[0] }}@{{ inform_before_time | default('60', true) }}
+{%- endif %}
+{%- set complete_sweep_id_elements = [] %}
+{%- if entity %}{% do complete_sweep_id_elements.append(entity) %}{% endif %}
+{%- if project %}{% do complete_sweep_id_elements.append(project) %}{% endif %}
+{%- do complete_sweep_id_elements.append(sweep) %}
+
+#SBATCH --job-name={{ sweep }}
+{%- if num_agents > 1 and not chain %}
+#SBATCH --array=1-{{num_agents}}
+#SBATCH --output={{ job_dir }}/%A_%a.out
+{%- else %}
+#SBATCH --output={{ job_dir }}/%j.out
+{%- endif %}
+{%- for arg in verbatim_args %}
+#SBATCH --{{ arg }}
+{%- endfor %}
+
+{%- if signals %}
+# trap the signal to the main BATCH script here.
+sig_handler()
+{
+ echo "BATCH interrupted"
+ wait # wait for all children, this is important!
+}
+{%- set signals_fullname = [] %}
+{%- for sig in signals %}{% do signals_fullname.append('SIG'+sig) %}{% endfor %}
+trap 'sig_handler' {{ signals_fullname |join(' ')}}
+{%- endif %}
+
+srun wandb agent {% if run_count %}--count {{ run_count }} {% endif %}{{ complete_sweep_id_elements | join('/') }}

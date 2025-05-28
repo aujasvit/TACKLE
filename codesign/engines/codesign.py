@@ -63,7 +63,7 @@ class LitCoDesign(pl.LightningModule):
             f'train_{self.train_loss.name}': pred_train_loss.item(),
             f'train_{self.val_test_loss.name}': pred_val_test_loss.item()
         }
-        self.log_dict(accuracy_dict, on_step=False, on_epoch=True) # change the default on_step, on_epoch options for "on_train_batch_end" hook
+        self.log_dict(accuracy_dict, on_step=False, on_epoch=True, sync_dist=True) # change the default on_step, on_epoch options for "on_train_batch_end" hook
     
     def validation_step(self, batch, batch_idx):
         # this is the validation loop
@@ -81,7 +81,7 @@ class LitCoDesign(pl.LightningModule):
             f'val_{self.train_loss.name}': pred_train_loss.item(),
             f'val_{self.val_test_loss.name}': pred_val_loss.item()
         }
-        self.log_dict(accuracy_dict)
+        self.log_dict(accuracy_dict, sync_dist=True)
         if self.current_epoch % 10 == 0 and batch_idx == 0:
             try:
                 wandb_imshow(self.sampler.mask_binarized_vis, 'binary mask')
@@ -114,7 +114,7 @@ class LitCoDesign(pl.LightningModule):
                 f'test_zf_{self.train_loss.name}': zf_train_loss.item(),
                 f'test_zf_{self.val_test_loss.name}': zf_test_loss.item()
             })
-        self.log_dict(accuracy_dict)
+        self.log_dict(accuracy_dict, sync_dist=True)
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.cfg.lr)
@@ -130,12 +130,16 @@ class LitCrossValidationCoDesign(LitCoDesign):
             f'val_{self.train_loss.name}_fold{current_fold}': pred_train_loss.item(),
             f'val_{self.val_test_loss.name}_fold{current_fold}': pred_val_loss.item()
         }
-        self.log_dict(accuracy_dict)
+        self.log_dict(accuracy_dict, sync_dist=True)
         if self.current_epoch % 10 == 0 and batch_idx == 0:
             fig = plt.figure()
             plt.imshow(self.sampler.mask_binarized_vis, 'gray')
             plt.colorbar()
-            wandb.log({f'binary mask (fold {current_fold})': fig})
+            # wandb.log({f'binary mask (fold {current_fold})': fig})
+
+            if self.logger and hasattr(self.logger, "experiment") and self.global_rank == 0:
+                self.logger.experiment.log({f'binary mask (fold {current_fold})': fig})
+
             plt.close()
 
     def on_test_batch_end(self, outputs, batch, batch_idx, dataloader_idx=0):
@@ -150,4 +154,4 @@ class LitCrossValidationCoDesign(LitCoDesign):
                 f'test_zf_{self.train_loss.name}_fold{current_fold}': zf_train_loss.item(),
                 f'test_zf_{self.val_test_loss.name}_fold{current_fold}': zf_test_loss.item()
             })
-        self.log_dict(accuracy_dict)
+        self.log_dict(accuracy_dict, sync_dist=True)

@@ -7,6 +7,7 @@ from pytorch_lightning.loops import FitLoop
 from pytorch_lightning.loops import Loop
 from pytorch_lightning.trainer.states import TrainerFn
 from codesign.data.base import BaseKFoldDataModule
+from pytorch_lightning.strategies import DDPStrategy
 from typing import Any, Dict
 from copy import deepcopy
 
@@ -135,10 +136,18 @@ class CrossValidation:
  
     def __call__(self, model, data_module):
         # train model
+
+        if int(os.environ.get("LOCAL_RANK", 0)) == 0:
+            logger = WandbLogger(**dict(self.cfg.logger))
+        else:
+            logger = False  # no logging on other ranks
+
         trainer = pl.Trainer(
             accelerator='gpu', 
-            devices=1, 
-            logger=WandbLogger(**dict(self.cfg.logger)), 
+            devices=4, 
+            # devices=4, 
+            strategy=DDPStrategy(find_unused_parameters=True), 
+            logger=logger,
             **dict(self.cfg.trainer)
         )
 

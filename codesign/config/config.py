@@ -12,13 +12,25 @@ class CodesignConfigurator:
         # check cfg configurations
         self._check_cfg()
 
-        # user provided fixes
+        # Pre-declare missing fix keys to avoid merge errors
         if args.fix is not None:
+            for k in args.fix[::2]:  # only the keys
+                parts = k.split(".")
+                node = self.cfg
+                for part in parts[:-1]:
+                    if not hasattr(node, part):
+                        node[part] = CN()  # intermediate level
+                    node = node[part]
+                if parts[-1] not in node:
+                    node[parts[-1]] = None  # placeholder
+
+            # Now safe to apply the actual fixes
             self.cfg.merge_from_list(args.fix)
 
         # default fixes
         self.cfg = self._default_fix(self.cfg)
-        
+
+        self._check_cfg()
         self.cfg.freeze()
     
     def _check_cfg(self):

@@ -91,43 +91,56 @@ class SkmTeaData(Dataset):
             )
 
     @staticmethod
-    def create_infos(kspace_dir="datasets/skm_kspace", seg_dir="datasets/skm_segmentation",
-        output_dir='datasets/processed_skm'):
+    def create_infos(
+        kspace_dir="/global/homes/p/peterwg/pscratch/datasets/qdess/v1-release/files_recon_calib-24", 
+        seg_dir="/global/homes/p/peterwg/pscratch/datasets/qdess/v1-release/segmentation_masks/raw-data-track",
+        output_dir='datasets/processed_skm'
+    ):
         kspace_folder = pathlib.Path(kspace_dir).resolve()
         patients_name = sorted([x for x in kspace_folder.iterdir() if str(x).endswith('.h5')])
 
-        os.makedirs(pathlib.Path(__file__).parent.resolve()/'infos', exist_ok=True)
-        # save patient names 
-        np.save(pathlib.Path(__file__).parent.resolve()/'infos/patients_name.npy', {'patients_name': patients_name})
+        project_dir = pathlib.Path.cwd()
+        out = project_dir / output_dir
+
+        (out / 'infos').mkdir(parents=True, exist_ok=True)
+        (out / 'label').mkdir(parents=True, exist_ok=True)
+        (out / 'kspace').mkdir(parents=True, exist_ok=True)
+
+        # Save patient names once
+        np.save(out / 'infos' / 'patients_name.npy', {'patients_name': patients_name})
 
         for name in tqdm(patients_name):
             name = name.stem
 
-            # read kspace and segmentation files and divide them by slices
+            # Read kspace and segmentation files and divide them by slices
             with h5py.File(f"{kspace_dir}/{name}.h5", 'r') as f:
                 seg_path = f"{seg_dir}/{name}.nii.gz"
                 seg_map = dm.read(seg_path).A 
 
-                # x x dy x dz x num_coils
                 E1_kspace = torch.from_numpy(f['kspace'][:, :, :, 0])
-                # E1_target = f["target"][:, :, :, 0]
                 sense_maps = f['maps']
 
                 E1_3D_kspace = fftn_(E1_kspace, dim=0) 
                 E1_slice_kspace = ifftn_(E1_3D_kspace, dim=-2)
 
-                # divide into sagital view slices 
+                # Divide into sagittal view slices 
                 for slice_number in range(seg_map.shape[-1]):
+                    kspace_path = f"{output_dir}/kspace/{name}_{slice_number}.npy"
+                    label_path = f"{output_dir}/label/{name}_{slice_number}.npy"
+
+                    if os.path.exists(kspace_path) and os.path.exists(label_path):
+                        continue  # Skip if already written
+
                     slice_recon = ifftn_(E1_slice_kspace[:, :, slice_number], dim=[0, 1])
                     slice_kspace = fftn_(slice_recon, dim=[-3, -2])
                     map_slice = sense_maps[:, :, slice_number]
 
                     seg_slice = seg_map[:, :, slice_number]
 
-                    patellar_cartilage = seg_slice==1 
-                    femoral_cartilage = seg_slice==2 
-                    tibial_cartilage = np.logical_or(seg_slice==3, seg_slice==4)
-                    meniscus = np.logical_or(seg_slice==5, seg_slice==6)
+                    patellar_cartilage = seg_slice == 1 
+                    femoral_cartilage = seg_slice == 2 
+                    tibial_cartilage = np.logical_or(seg_slice == 3, seg_slice == 4)
+                    meniscus = np.logical_or(seg_slice == 5, seg_slice == 6)
 
                     label_dict = {
                         'patellar_cartilage': patellar_cartilage,
@@ -141,8 +154,8 @@ class SkmTeaData(Dataset):
                         'map': map_slice
                     }
 
-                    np.save(f"{output_dir}/label/{name}_{slice_number}.npy", label_dict)
-                    np.save(f"{output_dir}/kspace/{name}_{slice_number}.npy", kspace_dict)
+                    np.save(label_path, label_dict)
+                    np.save(kspace_path, kspace_dict)
 
 @dataclass
 class SkmTeaDataModule(BaseDataModule):
@@ -157,6 +170,8 @@ class SkmTeaDataModule(BaseDataModule):
             data = np.load(CURRENT_FOLDER_PATH / 'infos/valid_files.npy', allow_pickle=True).item()
             data_list, valid_patient_names = data['data_list'], data['valid_patient_names']
         else:
+            infos_dir = CURRENT_FOLDER_PATH / 'infos'
+            infos_dir.mkdir(parents=True, exist_ok=True)
             data_list, valid_patient_names = get_valid_files_in_dir('./datasets/processed_skm/kspace')
             np.save(CURRENT_FOLDER_PATH / 'infos/valid_files.npy', {'data_list': data_list, 'valid_patient_names': valid_patient_names})
 

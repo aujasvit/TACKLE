@@ -40,20 +40,25 @@ class BratsData(Dataset):
         return len(self.slices) 
 
     @staticmethod
-    def create_infos(data_dir="datasets/brats", output_dir='datasets/processed_brats',
+    def create_infos(data_dir="/global/homes/p/peterwg/pscratch/datasets/brats_2025/BraTS2025-GLI-PRE-Challenge-TrainingData", output_dir='datasets/processed_brats',
         selected_modality='t1'):
         data_folder = pathlib.Path(data_dir).resolve()
         output_dir = pathlib.Path(output_dir).resolve()
         patients_name = sorted([x for x in data_folder.iterdir() if x.is_dir()])
 
-        output_dir.mkdir(exist_ok=True)        
+        output_dir.mkdir(exist_ok=True, parents=True)        
         os.makedirs(pathlib.Path(__file__).parent.resolve()/'infos', exist_ok=True)
         # save patient names 
         np.save(pathlib.Path(__file__).parent.resolve()/'infos/patients_name.npy', {'patients_name': patients_name})
-
+        modality_map = {
+            'flair': 't2f',
+            't1ce': 't1c',
+            't1': 't1n',
+            't2': 't2w',
+            }
         for name in tqdm(patients_name):
-            image_path = name / f'{name.stem}_{selected_modality}.nii.gz'
-            seg_path = name / f'{name.stem}_seg.nii.gz'
+            image_path = name / f'{name.stem}-{modality_map[selected_modality]}.nii.gz'
+            seg_path = name / f'{name.stem}-seg.nii.gz'
 
             images = BratsData.load_nii(image_path)
             segs = BratsData.load_nii(seg_path)
@@ -141,17 +146,30 @@ class BratsDataModule(BaseDataModule):
         train_slices, val_slices, test_slices = [], [], []
 
         # extract corresponding slices 
+        # for data in data_list: 
+        #     name = data.stem.split('_slice_')[0] 
+        #     # extract name id from path 
+        #     if name in [x.stem.split('_')[-1] for x in train]:
+        #         train_slices.append(data)
+        #     elif name in [x.stem.split('_')[-1] for x in val]:
+        #         val_slices.append(data)
+        #     elif name in [x.stem.split('_')[-1] for x in test]: 
+        #         test_slices.append(data)
+        #     else:
+        #         raise ValueError('Unknown patient name')
+
         for data in data_list: 
-            name = data.stem.split('_')[2] 
-            # extract name id from path 
-            if name in [x.stem.split('_')[-1] for x in train]:
+            name = data.stem.split('_slice_')[0]
+
+            if name in [x.name for x in train]:
                 train_slices.append(data)
-            elif name in [x.stem.split('_')[-1] for x in val]:
+            elif name in [x.name for x in val]:
                 val_slices.append(data)
-            elif name in [x.stem.split('_')[-1] for x in test]: 
+            elif name in [x.name for x in test]:
                 test_slices.append(data)
             else:
-                raise ValueError('Unknown patient name')
+                raise ValueError(f'Unknown patient name: {name}')
+
 
         self.train_set = BratsData(
             train_slices, 

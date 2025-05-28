@@ -1,0 +1,29 @@
+_BASE_: ../default.yaml
+exp_name: tci_skmtea_label=-1_64x_novarnet-recon_1e-3_1-cascade
+task: recon
+lr: 0.001
+model:
+  name: NOMRI-Recon
+  sampler:
+    name: LOUPESampler
+    shape: [512, 512]
+    subsampling_dim: [-2, -1]
+    acceleration: 64
+    line_constrained: False
+    preselect_num: 0
+    preselect_ratio: 512
+  reconstructor:
+    name: NOVarnet
+    num_cascades: 1
+    sens_chans: 8
+    sens_pools: 4
+    chans: 18
+    pools: 4
+    acs_ratio: 512
+    use_dc_term: True
+  predictor:
+    name: IdentityPredictor
+train_loss:
+  name: PSNRLoss
+val_test_loss:
+  name: PSNR
