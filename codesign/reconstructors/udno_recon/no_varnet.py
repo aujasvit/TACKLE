@@ -519,7 +519,7 @@ class VarNetBlock(nn.Module):
         zero = torch.zeros(1, 1, 1, 1, 1).to(current_kspace)
         # soft_dc = torch.where(mask, current_kspace - ref_kspace, zero) * self.dc_weight
         # print(mask.shape, current_kspace.shape, ref_kspace.shape)
-        # mask = mask.unsqueeze(1).unsqueeze(-1)
+        mask = mask.unsqueeze(1).unsqueeze(-1)
         
         soft_dc = torch.where(mask.to(torch.bool), current_kspace - ref_kspace, zero) * self.dc_weight
         return current_kspace - soft_dc - model_term
@@ -650,7 +650,14 @@ class NOVarnet(nn.Module):
             kspace_pred = kspace_pred.unsqueeze(1)
             ref_kspace = ref_kspace.unsqueeze(1)
 
-        mask = mask.unsqueeze(1).unsqueeze(-1)
+        x_reduced = sens_reduce(kspace_pred, sens_maps)
+        k_reduced = _fft2c(x_reduced)
+        kspace_pred = k_reduced.clone() + self.kno(k_reduced) 
+        kspace_pred = _ifft2c(kspace_pred)
+        kspace_pred = sens_expand(kspace_pred, sens_maps)
+
+        # mask = mask.unsqueeze(1).unsqueeze(-1)
+        # print(kspace_pred.shape)
 
         for cascade in self.cascades:
             kspace_pred = cascade(kspace_pred, ref_kspace, mask, sens_maps)
@@ -665,8 +672,11 @@ class NOVarnet(nn.Module):
         return recon, recon_zf 
 
 
-        # (B, C, X, Y, 2)
 
+
+
+
+        # (B, C, X, Y, 2)
         # recon_zf = complex_to_chan(ifftn_(masked_kspace, dim=[-2, -1]), chan_dim=1, num_chan=1)
         # num_low_frequencies = self.acs_ratio
 

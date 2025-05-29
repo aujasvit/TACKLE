@@ -33,7 +33,7 @@ class Test:
             accelerator='gpu', 
             # devices=4,
             devices=4,
-            strategy=DDPStrategy(find_unused_parameters=True), 
+            strategy=DDPStrategy(find_unused_parameters=False), 
             logger=logger,
             callbacks=callbacks
         )

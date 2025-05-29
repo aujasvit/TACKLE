@@ -1,5 +1,5 @@
 _BASE_: ../default2.yaml
-exp_name: tci_skmtea_label=-1_16x_novarnet-recon_1e-3_2-cascade-sad
+exp_name: "novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_fix_idk"
 task: recon
 lr: 0.001
 model:
