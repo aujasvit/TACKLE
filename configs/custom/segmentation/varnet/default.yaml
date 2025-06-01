@@ -3,7 +3,7 @@ procedure:
   name: TrainValTest
 task: seg
 trainer:
-  max_epochs: 20
+  max_epochs: 50
 patience: 10
 callbacks: [TestCallback, PaperFigureCallback]
 lr: 0.001

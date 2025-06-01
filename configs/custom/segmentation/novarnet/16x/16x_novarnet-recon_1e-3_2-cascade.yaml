@@ -1,5 +1,5 @@
-_BASE_: ../default2.yaml
-exp_name: "novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_fix_idk"
+_BASE_: ../default.yaml
+exp_name: "novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_final"
 task: recon
 lr: 0.001
 model:

@@ -1,6 +1,6 @@
 _BASE_: ../default.yaml
-exp_name: tci_skmtea_label=-1_16x_novarnet-seg-ft_1e-3_1-cascade
-init_exp_dir: results/tci_skmtea_label=-1_16x_novarnet-recon_1e-3_1-cascade
+exp_name: "novarnet_16x_2-cascade_ks[3,4]_rc0.02_seg-ft"
+init_exp_dir: "results/novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_final"
 init_modules: [sampler, reconstructor]
 init_module_trainability: [True, True]
 lr: 0.001
@@ -16,13 +16,15 @@ model:
     preselect_ratio: 128
   reconstructor:
     name: NOVarnet
-    num_cascades: 1
+    num_cascades: 2
     sens_chans: 8
     sens_pools: 4
     chans: 18
     pools: 4
-    acs_ratio: 128
+    acs_ratio: 32
     use_dc_term: True
+    kernel_shape: [3, 4]
+    radius_cutoff: 0.02
   predictor:
     name: UNetMonaiSegmenter
     spatial_dims: 2

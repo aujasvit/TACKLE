@@ -21,7 +21,7 @@ conda activate tackle-baseline
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 
 export WANDB_API_KEY=9bdf67e085edee3d5f0201ca102ccc6e0e9577a6
-export WANDB_PROJECT=no_param_sweep
+export WANDB_PROJECT=mri_codesign
 export WANDB_ENTITY=aujasvitd
 export WANDB_DIR=/global/homes/p/peterwg/pscratch/aujasvit/wandb
 export WANDB_CACHE_DIR=/pscratch/sd/p/peterwg/more/wandb_cache

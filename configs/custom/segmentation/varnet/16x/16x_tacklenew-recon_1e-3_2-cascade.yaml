@@ -1,5 +1,5 @@
 _BASE_: ../default.yaml
-exp_name: tci_skmtea_label=-1_16x_tacklenew-recon_1e-3_2-cascade
+exp_name: tacklenew-recon_16x_2-cascade_final
 task: recon
 lr: 0.001
 model:

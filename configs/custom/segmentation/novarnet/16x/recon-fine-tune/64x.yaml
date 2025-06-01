@@ -1,7 +1,7 @@
 _BASE_: ../../default.yaml
 exp_name: "novarnet_16x_2-cascade_ks[3,4]_rc0.02_recon-ft_64x"
 task: recon
-init_exp_dir: "results/novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02"
+init_exp_dir: "results/novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_fix"
 init_modules: [sampler, reconstructor]
 init_module_trainability: [True, True]
 lr: 0.001
