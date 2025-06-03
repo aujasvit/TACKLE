@@ -32,14 +32,14 @@ if __name__ == '__main__':
         f.write(str(cc.cfg))
 
     # Initialize W&B
-    # wandb_mode = "online" if local_rank == 0 else "disabled"
-    wandb_mode = "disabled"
+    wandb_mode = "online" if local_rank == 0 else "disabled"
+    # wandb_mode = "disabled"
     wandb.init(mode=wandb_mode)
 
     # Set W&B run name from config (only on rank 0)
-    # if local_rank == 0 and hasattr(cc.cfg, "exp_name"):
-    #     wandb.run.name = cc.cfg.exp_name
-    #     wandb.run.save()
+    if local_rank == 0 and hasattr(cc.cfg, "exp_name"):
+        wandb.run.name = cc.cfg.exp_name
+        wandb.run.save()
 
     # Build experiment and run
     exp, model, data_module = cc.init_all()

@@ -1,9 +1,9 @@
 _BASE_: ../default.yaml
-exp_name: "novarnet_multi-rate_recon"
+exp_name: "e2evarnet_multi-rate_recon"
 task: recon
 lr: 0.001
 model:
-  name: NOVarnet-Recon
+  name: E2EVarnet-Recon
   sampler:
     name: LoupeSamplerMultiAcceleration
     shape: [512, 512]
@@ -12,15 +12,12 @@ model:
     line_constrained: False
     preselect_ratios: [32, 64, 128, 256, 512]
   reconstructor:
-    name: NOVarnet
+    name: VarNetReconstructor
     num_cascades: 2
-    sens_chans: 8
-    sens_pools: 4
     chans: 18
     pools: 4
-    use_dc_term: True
-    kernel_shape: [3, 4]
-    radius_cutoff: 0.02 
+    dc_weight: 1
+    adj_dc_weight: True
   predictor:
     name: IdentityPredictor
 train_loss:
