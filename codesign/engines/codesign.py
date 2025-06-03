@@ -47,7 +47,7 @@ class LitCoDesign(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         # training_step defines the train loop.
         kspace, image, segmap, bbox, label = batch
-        _ = self.sampler(kspace)
+        # _ = self.sampler(kspace)
         kspace_sampled, mask_binarized, acs_ratio = (self.sampler(kspace) + (None,))[:3]
         recon, _ = self.reconstructor(kspace_sampled, mask_binarized, acs_ratio)
         pred = self.predictor(recon)

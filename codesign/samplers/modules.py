@@ -25,6 +25,7 @@ def preselect(mask, dim, preselect_num, preselect_ratio, value=1, line_constrain
             preH, preW = int(H / np.sqrt(preselect_ratio)), int(W / np.sqrt(preselect_ratio)) 
             index[dim[0]] = slice((H-preH)//2, (H-preH)//2+preH)
             index[dim[1]] = slice((W-preW)//2, (W-preW)//2+preW)
+            # print(index)
         elif preselect_num > 0:
             index[dim[0]] = slice((H-preselect_num)//2, (H-preselect_num)//2+preselect_num)
             index[dim[1]] = slice((W-preselect_num)//2, (W-preselect_num)//2+preselect_num)

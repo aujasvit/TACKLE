@@ -205,8 +205,8 @@ class LoupeSamplerMultiAcceleration(nn.Module):
 
         # preselect
         if self.preselect:
-            mask_prob = preselect(
-                mask_prob,
+            mask_binarized = preselect(
+                mask_binarized,
                 dim=self.subsampling_dim, 
                 preselect_num=self.preselect_num[acc_ind] if self.preselect_nums is not None else 0,
                 preselect_ratio=sample_preselect_ratio,
