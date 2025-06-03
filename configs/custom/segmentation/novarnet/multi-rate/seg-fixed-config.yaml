@@ -1,0 +1,32 @@
+_BASE_: ../default.yaml
+exp_name: "novarnet_multi-rate_seg-fixed"
+init_exp_dir: "results/novarnet_multi-rate_recon"
+init_modules: [sampler, reconstructor]
+init_module_trainability: [False, False]
+lr: 0.0001
+model:
+  name: NOVarnet-Seg-Fixed
+  sampler:
+    name: LoupeSamplerMultiAcceleration
+    shape: [512, 512]
+    subsampling_dim: [-2, -1]
+    accelerations: [4,8,16,32,64]
+    line_constrained: False
+    preselect_ratios: [32, 64, 128, 256, 512]
+  reconstructor:
+    name: NOVarnet
+    num_cascades: 2
+    sens_chans: 8
+    sens_pools: 4
+    chans: 18
+    pools: 4
+    use_dc_term: True
+    kernel_shape: [3, 4]
+    radius_cutoff: 0.02 
+  predictor:
+    name: UNetMonaiSegmenter
+    spatial_dims: 2
+    in_channels: 1
+    out_channels: 5
+    channels: [64, 128, 256, 512, 1024]
+    strides: [2, 2, 2, 2]
