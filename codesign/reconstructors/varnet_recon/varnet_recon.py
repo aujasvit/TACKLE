@@ -97,12 +97,16 @@ class VarNetReconstructor(nn.Module):
         self,
         masked_kspace: torch.Tensor,
         mask: torch.Tensor,
+        acs_ratio: int = None
     ) -> torch.Tensor:
         recon_zf = complex_to_chan(ifftn_(masked_kspace, dim=[-2, -1]), chan_dim=1, num_chan=1)
         if recon_zf.dim() == 5:
             # multi-coil 
             recon_zf = _rss(recon_zf, dim=2)
-            sens_maps = self.sens_net(masked_kspace, mask, self.acs_ratio)
+            if acs_ratio is None:
+                sens_maps = self.sens_net(masked_kspace, mask, self.acs_ratio)
+            else:
+                sens_maps = self.sens_net(masked_kspace, mask, acs_ratio)
         else:
             # single coil 
             sens_maps = None 

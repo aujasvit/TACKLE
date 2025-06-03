@@ -629,6 +629,7 @@ class NOVarnet(nn.Module):
         self,
         masked_kspace: torch.Tensor,
         mask: torch.Tensor,
+        acs_ratio: Optional[int] = None,
         # num_low_frequencies: Optional[int] = None,
     ) -> torch.Tensor:
 
@@ -636,7 +637,10 @@ class NOVarnet(nn.Module):
         if recon_zf.dim() == 5:
             # multi-coil 
             recon_zf = _rss(recon_zf, dim=2)
-            sens_maps = self.sens_net(masked_kspace, mask, self.acs_ratio)
+            if acs_ratio is None:
+                sens_maps = self.sens_net(masked_kspace, mask, self.acs_ratio)
+            else:
+                sens_maps = self.sens_net(masked_kspace, mask, acs_ratio)
         else:
             # single coil 
             sens_maps = None 
