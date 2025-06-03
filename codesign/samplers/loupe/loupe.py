@@ -164,13 +164,13 @@ class LoupeSamplerMultiAcceleration(nn.Module):
 
     @property
     def preselect(self):
-        return self.preselect_num is not None or self.preselect_ratio is not None
+        return self.preselect_nums is not None or self.preselect_ratios is not None
 
     def sampler_budget(self, ind):
-        if self.preselect_ratio == 0:
+        if self.preselect_ratios == None:
             return 1 / self.accelerations[ind]
         else:
-            return 1 / self.acceleration[ind] - 1 / self.preselect_ratios[ind]
+            return 1 / self.accelerations[ind] - 1 / self.preselect_ratios[ind]
 
     def forward(self, kspace):
         # randomly choose an acceleration factor
@@ -178,7 +178,7 @@ class LoupeSamplerMultiAcceleration(nn.Module):
         acc_ind = torch.randint(0, len(acc_tensor), (1,))
 
         sample_acceleration = acc_tensor[torch.randint(0, len(acc_tensor), (1,))].item()
-        sample_preselect_ratio = self.preselect_ratio[acc_ind].item() if self.preselect_ratio is not None else 0
+        sample_preselect_ratio = self.preselect_ratios[acc_ind] if self.preselect_ratios is not None else 0
         
         mask_prob = self.get_probability_mask(kspace)
 
@@ -187,8 +187,8 @@ class LoupeSamplerMultiAcceleration(nn.Module):
             mask_prob = preselect(
                 mask_prob,
                 dim=self.subsampling_dim, 
-                preselect_num=self.preselect_num, 
-                preselect_ratio=sample_preselect_ratio, 
+                preselect_num=self.preselect_num[acc_ind] if self.preselect_nums is not None else 0, 
+                preselect_ratio=sample_preselect_ratio,
                 value=0, # set preselect region to be 0
                 line_constrained=self.line_constrained
             )
@@ -205,12 +205,12 @@ class LoupeSamplerMultiAcceleration(nn.Module):
 
         # preselect
         if self.preselect:
-            mask_binarized = preselect(
-                mask_binarized,
+            mask_prob = preselect(
+                mask_prob,
                 dim=self.subsampling_dim, 
-                preselect_num=self.preselect_num, 
-                preselect_ratio=sample_preselect_ratio, 
-                value=1, # set preselect region to be 1
+                preselect_num=self.preselect_num[acc_ind] if self.preselect_nums is not None else 0,
+                preselect_ratio=sample_preselect_ratio,
+                value=1, # set preselect region to be 0
                 line_constrained=self.line_constrained
             )
 

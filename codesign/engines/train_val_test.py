@@ -61,7 +61,7 @@ class TrainValTest:
             accelerator='gpu', 
             # devices=4, 
             devices=4, 
-            strategy=DDPStrategy(find_unused_parameters=False), 
+            # strategy=DDPStrategy(find_unused_parameters=False), 
             logger=logger,
             callbacks=[
                 checkpoint_callback, 

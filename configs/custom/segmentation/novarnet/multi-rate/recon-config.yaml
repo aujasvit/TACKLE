@@ -1,0 +1,29 @@
+_BASE_: ../default.yaml
+exp_name: "novarnet-recon_16x_2-cascade_ks[3,4]_rc0.02_final"
+task: recon
+lr: 0.001
+model:
+  name: NOVarnet-Recon
+  sampler:
+    name: LoupeSamplerMultiAcceleration
+    shape: [512, 512]
+    subsampling_dim: [-2, -1]
+    accelerations: [4,8,16,32,64]
+    line_constrained: False
+    preselect_ratios: [32, 64, 128, 256, 512]
+  reconstructor:
+    name: NOVarnet
+    num_cascades: 2
+    sens_chans: 8
+    sens_pools: 4
+    chans: 18
+    pools: 4
+    use_dc_term: True
+    kernel_shape: [3, 4]
+    radius_cutoff: 0.02 
+  predictor:
+    name: IdentityPredictor
+train_loss:
+  name: PSNRLoss
+val_test_loss:
+  name: PSNR

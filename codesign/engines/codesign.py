@@ -69,8 +69,8 @@ class LitCoDesign(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         # this is the validation loop
         kspace, image, segmap, bbox, label = batch
-        kspace_sampled, mask_binarized = self.sampler(kspace)
-        recon, _ = self.reconstructor(kspace_sampled, mask_binarized)
+        kspace_sampled, mask_binarized, acs_ratio = (self.sampler(kspace) + (None,))[:3]
+        recon, _ = self.reconstructor(kspace_sampled, mask_binarized, acs_ratio)
         pred = self.predictor(recon)
         pred_train_loss, pred_val_loss = self._calc_loss_by_task(recon, pred, image, segmap, bbox, label)
         return pred_train_loss, pred_val_loss
@@ -93,8 +93,8 @@ class LitCoDesign(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         # this is the test loop
         kspace, image, segmap, bbox, label = batch
-        kspace_sampled, mask_binarized = self.sampler(kspace)
-        recon, recon_zf = self.reconstructor(kspace_sampled, mask_binarized)
+        kspace_sampled, mask_binarized, acs_ratio = (self.sampler(kspace) + (None,))[:3]
+        recon, recon_zf = self.reconstructor(kspace_sampled, mask_binarized, acs_ratio)
         pred = self.predictor(recon)
         pred_train_loss, pred_test_loss = self._calc_loss_by_task(recon, pred, image, segmap, bbox, label)
         if self.task in ['recon', 'local_recon', 'local_enhance']:

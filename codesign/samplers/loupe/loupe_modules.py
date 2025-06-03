@@ -100,7 +100,7 @@ class ProbMaskMutliAccn(nn.Module):
             slope (float): Slope for the Loupe probability mask. Larger slopes make the mask converge faster to
                            deterministic state.
         """
-        super(ProbMask, self).__init__()
+        super(ProbMaskMutliAccn, self).__init__()
 
         self.slope = slope
         # self.preselect = preselect 
@@ -110,7 +110,7 @@ class ProbMaskMutliAccn(nn.Module):
         init_tensor = self._slope_random_uniform(shape)
         self.mask = nn.Parameter(init_tensor, requires_grad=True)
 
-    def forward(self, input, preselect_ratio, acceleration):
+    def forward(self, input):
         """
         Args:
             input (torch.Tensor): Input tensor of shape NHWC

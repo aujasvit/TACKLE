@@ -31,6 +31,7 @@ class PSNRLoss(nn.Module):
         data_range = torch.stack(data_range, dim=0)
         psnr = 10 * torch.log10((data_range ** 2) / mse)
         if torch.any(torch.isnan(psnr)):
+            print(mse)
             print(torch.isnan(psnr))
             print(Xs.shape, Ys.shape)
             import matplotlib.pyplot as plt
