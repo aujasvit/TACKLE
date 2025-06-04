@@ -236,8 +236,12 @@ class CodesignTestConfigurator(CodesignConfigurator):
         model = self._init_model()
 
         # checkpoint
-        ckpt = self._init_ckpt(self.cfg.exp_dir)
-        model = self._load_model_from_ckpt(ckpt, model, ignore_train_loss=True, ignore_val_test_loss=True)
+        if 'init_exp_dir' in self.cfg.keys():
+            ckpt = self._init_ckpt(self.cfg.init_exp_dir)
+            model = self._load_model_from_ckpt(ckpt, model, ignore_train_loss=True, ignore_val_test_loss=True)
+        else:
+            ckpt = self._init_ckpt(self.cfg.exp_dir)
+            model = self._load_model_from_ckpt(ckpt, model, ignore_train_loss=True, ignore_val_test_loss=True)
         
         # exp
         exp = Test(self.cfg, self.data_cfg)
