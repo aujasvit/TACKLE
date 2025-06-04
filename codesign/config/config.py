@@ -1,7 +1,7 @@
 import importlib, pathlib, torch
 from fvcore.common.config import CfgNode as CN
 from codesign.engines import *
-from tackle.codesign.engines.cross_val import CrossValidation
+# from tackle.codesign.engines.cross_val import CrossValidation
 
 class CodesignConfigurator:
     def __init__(self, args):
