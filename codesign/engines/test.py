@@ -24,7 +24,10 @@ class Test:
             callbacks.append(TestCallback(type(data_module).__name__, self.cfg, self.data_cfg))
 
         if int(os.environ.get("LOCAL_RANK", 0)) == 0:
-            logger =WandbLogger(id=args.id, **dict(self.cfg.logger), entity='aujasvitd') if args.id else False
+            if args.id is None:
+                logger = WandbLogger(**dict(self.cfg.logger), entity='aujasvitd')
+            else:
+                logger =WandbLogger(id=args.id, **dict(self.cfg.logger), entity='aujasvitd')
         else:
             logger = False  # no logging on other ranks
 
@@ -32,7 +35,7 @@ class Test:
         trainer = pl.Trainer(
             accelerator='gpu', 
             # devices=4,
-            devices=4,
+            devices=1,
             strategy=DDPStrategy(find_unused_parameters=False), 
             logger=logger,
             callbacks=callbacks
