@@ -1,6 +1,7 @@
-exp_name: novarnet_multi-rate_recon_test-8x
-init_exp_dir: "results/novarnet_multi-rate_recon"
+exp_name: novarnet_multi-rate_seg-ft_test-8x
+init_exp_dir: "results/novarnet_multi-rate_seg-ft"
 init_modules: [sampler, reconstructor, predictor]
+init_module_trainability: [False, False, False]
 callbacks: ['TestCallback', 'PaperFigureCallback']
 data_module:
   batch_size: 4
@@ -15,7 +16,12 @@ lr: 0.001
 model:
   name: NOVarnet-Recon
   predictor:
-    name: IdentityPredictor
+    name: UNetMonaiSegmenter
+    spatial_dims: 2
+    in_channels: 1
+    out_channels: 5
+    channels: [64, 128, 256, 512, 1024]
+    strides: [2, 2, 2, 2]
   reconstructor:
     chans: 18
     kernel_shape: [3, 4]
