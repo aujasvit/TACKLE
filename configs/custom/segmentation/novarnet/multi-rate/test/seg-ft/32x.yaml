@@ -1,0 +1,49 @@
+exp_name: novarnet_multi-rate_recon_test-32x
+init_exp_dir: "results/novarnet_multi-rate_recon"
+init_modules: [sampler, reconstructor, predictor]
+callbacks: ['TestCallback', 'PaperFigureCallback']
+data_module:
+  batch_size: 4
+  name: SkmTeaDataModule
+  selected_class: -1
+  shape: [512, 512]
+logger:
+  name: novarnet_multi-rate_recon
+  project: mri_codesign
+  save_dir: results/novarnet_multi-rate_recon
+lr: 0.001
+model:
+  name: NOVarnet-Recon
+  predictor:
+    name: IdentityPredictor
+  reconstructor:
+    chans: 18
+    kernel_shape: [3, 4]
+    name: NOVarnet
+    num_cascades: 2
+    acs_ratio: 256
+    pools: 4
+    radius_cutoff: 0.02
+    sens_chans: 8
+    sens_pools: 4
+    use_dc_term: True
+  sampler:
+    name: LOUPESampler
+    shape: [512, 512]
+    subsampling_dim: [-2, -1]
+    acceleration: 32
+    line_constrained: False
+    preselect_num: 0
+    preselect_ratio: 256
+patience: 10
+procedure:
+  name: TrainValTest
+task: recon
+train_loss:
+  name: PSNRLoss
+trainer:
+  default_root_dir: results/novarnet_multi-rate_recon
+  max_epochs: 50
+val_test_loss:
+  name: PSNR
+vis_freq: 50

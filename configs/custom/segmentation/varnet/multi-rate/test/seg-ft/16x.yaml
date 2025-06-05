@@ -1,0 +1,52 @@
+exp_name: e2evarnet_multi-rate_seg-ft_test-16x
+init_exp_dir: "results/e2evarnet_multi-rate_seg-ft"
+init_modules: [sampler, reconstructor, predictor]
+init_module_trainability: [False, False, False]
+callbacks: ['TestCallback', 'PaperFigureCallback']
+data_module:
+  batch_size: 4
+  name: SkmTeaDataModule
+  selected_class: -1
+  shape: [512, 512]
+logger:
+  name: novarnet_multi-rate_recon
+  project: mri_codesign
+  save_dir: results/novarnet_multi-rate_recon
+lr: 0.001
+model:
+  name: E2EVarnet-Recon
+  predictor:
+    name: UNetMonaiSegmenter
+    spatial_dims: 2
+    in_channels: 1
+    out_channels: 5
+    channels: [64, 128, 256, 512, 1024]
+    strides: [2, 2, 2, 2]
+  reconstructor:
+    name: VarNetReconstructor
+    num_cascades: 2
+    chans: 18
+    pools: 4
+    acs_ratio: 128
+    dc_weight: 1
+    adj_dc_weight: True
+  sampler:
+    name: LOUPESampler
+    shape: [512, 512]
+    subsampling_dim: [-2, -1]
+    acceleration: 16
+    line_constrained: False
+    preselect_num: 0
+    preselect_ratio: 128
+patience: 10
+procedure:
+  name: TrainValTest
+task: recon
+train_loss:
+  name: PSNRLoss
+trainer:
+  default_root_dir: results/e2evarnet_multi-rate_recon
+  max_epochs: 50
+val_test_loss:
+  name: PSNR
+vis_freq: 50
